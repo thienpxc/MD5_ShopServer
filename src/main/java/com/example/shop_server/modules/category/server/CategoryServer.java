@@ -23,4 +23,13 @@ public class CategoryServer {
 
     }
 
+    public CategoryModel addCategory(CategoryModel category) {
+        try {
+            return categoryRepository.save(category);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
 }
