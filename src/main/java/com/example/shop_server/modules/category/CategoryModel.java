@@ -16,7 +16,7 @@ public class CategoryModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String name;
-    private String src;
+    private String image;
     private boolean status;
 
 
