@@ -17,7 +17,7 @@ public class CategoryModel {
     private int id;
     private String name;
     private String image;
-    private boolean status;
+    private boolean status = true;
 
 
 }
