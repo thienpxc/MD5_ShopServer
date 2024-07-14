@@ -16,6 +16,7 @@ public class CategoryServer {
     private CategoryRepository categoryRepository;
 
 
+
     public List<CategoryModel> findAllCategories() {
         try{
             return categoryRepository.findAll();
@@ -62,6 +63,25 @@ public class CategoryServer {
     public List<CategoryModel> findByNameIsContainingIgnoreCase(String name) {
         return categoryRepository.findByNameIsContainingIgnoreCase(name);
     }
+
+    //hiện thị catetegory với trạng thái là true
+    public List<CategoryModel> findByStatusTrue() {
+        try{
+            return categoryRepository.findByStatusTrue();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+    public CategoryModel getCategoryById(Integer id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+    }
+
+
+
+
 
 
 

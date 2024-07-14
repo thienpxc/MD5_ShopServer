@@ -3,10 +3,12 @@ package com.example.shop_server.modules.category;
 import com.example.shop_server.modules.category.dto.rep.AddCategoryDTO;
 import com.example.shop_server.modules.category.repository.CategoryRepository;
 import com.example.shop_server.modules.category.server.CategoryServer;
+import com.example.shop_server.modules.user.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,11 +29,16 @@ public class CategoryController {
     }
 
     @PostMapping("")
-    public CategoryModel addCategory(@RequestBody AddCategoryDTO data ) {
+    public ResponseEntity<CategoryModel> addCategory(@RequestBody AddCategoryDTO data, @RequestAttribute("data") UserModel user) {
+
+        if(!user.getPermission().contains("category.c")) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+
         CategoryModel category = new CategoryModel();
         category.setName(data.getName());
         category.setImage(data.getImage());
-        return categoryServer.addCategory(category);
+        return new ResponseEntity<>(categoryServer.addCategory(category), HttpStatus.OK);
 
     }
 
@@ -67,5 +74,12 @@ public ResponseEntity<?> searchCategoryByName(@RequestParam String name) {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @GetMapping("/findAll")
+    public List<CategoryModel> findAllCategoryTrue() {
+        return categoryServer.findByStatusTrue();
+    }
+
+    //hiện thi sản phẩm theo category
 
 }

@@ -7,4 +7,9 @@ import java.util.List;
 
 public interface CategoryRepository extends JpaRepository<CategoryModel, Integer> {
     List<CategoryModel> findByNameIsContainingIgnoreCase(String name);
+
+    List<CategoryModel> findByStatusTrue();
+
+    //hiẹn thi  sản phẩm theo category
+
 }
