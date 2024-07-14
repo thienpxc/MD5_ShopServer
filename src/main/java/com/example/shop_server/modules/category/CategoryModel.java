@@ -20,4 +20,15 @@ public class CategoryModel {
     private boolean status = true;
 
 
+    @Override
+    public String toString() {
+        return "CategoryModel{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", image='" + image + '\'' +
+                ", status=" + status +
+                '}';
+    }
+
+
 }
