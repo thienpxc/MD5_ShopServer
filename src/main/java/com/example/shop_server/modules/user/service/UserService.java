@@ -3,6 +3,9 @@ package com.example.shop_server.modules.user.service;
 import com.example.shop_server.modules.user.UserModel;
 import com.example.shop_server.modules.user.reqository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -37,4 +40,16 @@ public class UserService {
             {
         return userRepository.findById(id);
     }
+
+    public boolean verifyCurrentPassword(String providedPassword, String currentPassword) {
+        return BCrypt.checkpw(providedPassword, currentPassword);
+    }
+
+//    public List<UserModel> findByNameIsContainingIgnoreCase(String name){
+//        return userRepository.findByUserNameContainsIgnoreCase(name);
+//    }
+
+//    public Page <UserModel> findAll(Pageable pageable){
+//        return userRepository.findAll(pageable);
+//    }
 }

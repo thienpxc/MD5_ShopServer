@@ -18,7 +18,11 @@ public interface ProductModelRepository extends JpaRepository<ProductModel, Inte
 
     Optional<ProductModel> findById(Integer id);
 
+    List<ProductModel> findByNameIsContainingIgnoreCase(String name);
+
     //hiẹn thị sản phẩm theo category
+
+
 
 
 }

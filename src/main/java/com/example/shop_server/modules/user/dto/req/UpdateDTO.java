@@ -38,4 +38,7 @@ public class UpdateDTO {
     private String createAt;
 
     private String updateAt;
+
+    private String newPassword;
+
 }
