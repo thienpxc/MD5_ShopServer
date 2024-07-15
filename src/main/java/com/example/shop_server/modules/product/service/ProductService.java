@@ -132,12 +132,28 @@ public class ProductService {
         return product;
     }
 
+
+    //chuyển đổi trạng thái sản phẩm
+    public ProductModel updateProductStatus(Integer id) {
+        ProductModel product = productModelRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        product.setStatus(!product.isStatus());
+        return productModelRepository.save(product);
+    }
+    //chuyển đổi trạng thái isFeatured
+    public ProductModel updateProductIsFeatured(Integer id) {
+        ProductModel product = productModelRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        product.setFeatured(!product.isFeatured());
+        return productModelRepository.save(product);
+
     public List<ProductModel> searchProductByName(String name) {
         return productModelRepository.findByNameIsContainingIgnoreCase(name);
     }
 
     public Page<ProductModel> findAll(Pageable pageable) {
         return productModelRepository.findAll(pageable);
+
     }
 
 }

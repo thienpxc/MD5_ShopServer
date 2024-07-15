@@ -1,5 +1,7 @@
 package com.example.shop_server.modules.address;
 
+import com.example.shop_server.modules.order.OrderModel;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -37,4 +39,5 @@ public class AddressModel {
     private String phone;
 
     private String name;
+    private Integer userId;
 }

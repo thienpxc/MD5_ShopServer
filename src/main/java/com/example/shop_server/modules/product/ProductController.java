@@ -73,6 +73,20 @@ public class ProductController {
         return productService.findTop8ByOrderByIdDesc();
     }
 
+    //chuyển đổi trạng thái sản phẩm
+    @PutMapping("/admin/products/{id}/status")
+    public ProductModel updateProductStatus(@PathVariable Integer id) {
+        return productService.updateProductStatus(id);
+    }
+
+    //chuy doi trạng thai isFeatured
+    @PutMapping("/admin/products/{id}/isFeatured")
+    public ProductModel updateProductIsFeatured(@PathVariable Integer id) {
+        return productService.updateProductIsFeatured(id);
+    }
+
+
+
 
     @GetMapping("/search")
     public List<ProductModel> searchProductByName(@RequestParam String name) {

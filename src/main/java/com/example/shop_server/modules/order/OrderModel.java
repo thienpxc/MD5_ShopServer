@@ -37,6 +37,9 @@ public class OrderModel {
 
     private String updateDate;
 
+    @Column(nullable = true)
+    private Integer addressId;
+
     @OneToMany(mappedBy = "orders")
     @JsonManagedReference
     private List<OrderDetailModel> details = new ArrayList<>();
