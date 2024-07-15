@@ -1,6 +1,8 @@
 package com.example.shop_server.modules.user.controller;
 
 import com.example.shop_server.modules.jwt.JwtService;
+import com.example.shop_server.modules.mail.MailService;
+import com.example.shop_server.modules.mail.Option;
 import com.example.shop_server.modules.user.UserModel;
 import com.example.shop_server.modules.user.dto.req.LoginDTO;
 import com.example.shop_server.modules.user.dto.req.RegisterDTO;
@@ -8,6 +10,7 @@ import com.example.shop_server.modules.user.dto.req.UpdateDTO;
 import com.example.shop_server.modules.user.service.UserService;
 import jakarta.validation.Valid;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,16 +23,15 @@ import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private MailService mailService;
 
     @PostMapping("/register")
     public ResponseEntity<Object> register(@Valid @RequestBody RegisterDTO data) {
@@ -43,6 +45,11 @@ public class UserController {
             user.setCreateAt(String.valueOf(System.currentTimeMillis()));
             user.setUpdateAt(String.valueOf(System.currentTimeMillis()));
             userService.save(user);
+
+            ArrayList<String> mails = new ArrayList<>();
+            mails.add(data.getEmail());
+            mailService.sendMail(new Option("Chào mừng", "Cảm ơn bạn đã đăng ký tài khoản", mails));
+
             return new ResponseEntity<>("Đăng ký thành công", HttpStatus.CREATED);
         } catch (Exception e) {
             if (e.getMessage().contains("Duplicate")) {
@@ -215,10 +222,34 @@ public ResponseEntity<Object> changePassword(@RequestAttribute("data") UserModel
 //}
 
 
+    @PostMapping("/user/update")
+    public ResponseEntity<?> updateUserWithoutPassword(@RequestBody UserModel user) {
+        UserModel currentUser = userService.findById(user.getId()).orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Copy properties from the user object to the currentUser object, excluding the password property
+        BeanUtils.copyProperties(user, currentUser, "password");
+
+        return ResponseEntity.ok(userService.save(currentUser));
+    }
+    //thay doi password
+    @PutMapping("/user/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> data) {
+        UserModel currentUser = userService.findById(Integer.parseInt(data.get("id"))).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!BCrypt.checkpw(data.get("oldPassword"), currentUser.getPassword())) {
+            return ResponseEntity.badRequest().body("Mật khẩu cũ không đúng");
+        }
+
+        currentUser.setPassword(BCrypt.hashpw(data.get("newPassword"), BCrypt.gensalt()));
+
+        return ResponseEntity.ok(userService.save(currentUser));
+    }
+    //lấy mật khẩu ra để thay đổi
+    @GetMapping("/user/get-password")
+    public ResponseEntity<?> getPassword(@RequestParam int id) {
+        return ResponseEntity.ok(userService.findPasswordById(id));
+    }
 
 
 
 }
-
-

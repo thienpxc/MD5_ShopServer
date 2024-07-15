@@ -52,4 +52,14 @@ public class UserService {
 //    public Page <UserModel> findAll(Pageable pageable){
 //        return userRepository.findAll(pageable);
 //    }
+    //thay doi password
+    public void changePassword(String password, int id){
+        userRepository.changePassword(password, id);
+    }
+
+    //lấy mật khẩu ra để thay đổi
+    public String findPasswordById(int id){
+        return userRepository.findPasswordById(id);
+    }
+
 }

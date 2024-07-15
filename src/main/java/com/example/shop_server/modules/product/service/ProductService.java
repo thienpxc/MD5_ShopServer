@@ -146,6 +146,7 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         product.setFeatured(!product.isFeatured());
         return productModelRepository.save(product);
+    }
 
     public List<ProductModel> searchProductByName(String name) {
         return productModelRepository.findByNameIsContainingIgnoreCase(name);
@@ -154,6 +155,6 @@ public class ProductService {
     public Page<ProductModel> findAll(Pageable pageable) {
         return productModelRepository.findAll(pageable);
 
-    }
 
+    }
 }
