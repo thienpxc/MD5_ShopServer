@@ -15,6 +15,17 @@ public interface OrderRepository extends JpaRepository<OrderModel ,Integer> {
     List<OrderModel> findByUserId(@Param("userId") int userId);
 
 
+    @Query(value = "SELECT * FROM ordermodel WHERE ordermodel.user_id = :userId and ordermodel.status = \"SHOPPING\"", nativeQuery = true)
+    OrderModel findCartByUserId(@Param("userId") Integer userId);
+
+    //hiện thi tất cả đơn hàng trừ status SHOPPING để hiện thi admin
+    @Query(value = "SELECT * FROM ordermodel WHERE ordermodel.user_id = :userId and ordermodel.status != \"SHOPPING\"", nativeQuery = true)
+    List<OrderModel> findOrderByUserId(@Param("userId") Integer userId);
+
+    //hiện thi tất cả đơn hàng trừ status SHOPPING để hiện thi admin
+    @Query(value = "SELECT * FROM ordermodel WHERE ordermodel.status != \"SHOPPING\"", nativeQuery = true)
+    List<OrderModel> findAllOrder();
+
 }
 
 

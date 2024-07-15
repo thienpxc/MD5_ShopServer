@@ -106,5 +106,19 @@ import java.util.Optional;
         public List<OrderModel> findByUserId(int userId) {
             return orderRepository.findByUserId(userId);
         }
+
+        public OrderModel findCartByUserId(Integer userId){
+            return orderRepository.findCartByUserId(userId);
+        }
+
+        public OrderModel save(OrderModel receiptModel) {
+            return orderRepository.save(receiptModel);
+        }
+
+        //hiện thi tất cả đơn hàng trừ status SHOPPING
+        public List<OrderModel> findAllOrder(){
+            return orderRepository.findAllOrder();
+        }
+
     }
 
