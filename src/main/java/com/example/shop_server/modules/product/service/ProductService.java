@@ -8,6 +8,8 @@ import com.example.shop_server.modules.product.dto.*;
 import com.example.shop_server.modules.product.repository.ProductModelRepository;
 import com.example.shop_server.modules.product.repository.ProductModelRepositoryImg;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -128,6 +130,14 @@ public class ProductService {
             createProductImages(product, imgDTO);
         }
         return product;
+    }
+
+    public List<ProductModel> searchProductByName(String name) {
+        return productModelRepository.findByNameIsContainingIgnoreCase(name);
+    }
+
+    public Page<ProductModel> findAll(Pageable pageable) {
+        return productModelRepository.findAll(pageable);
     }
 
 }
