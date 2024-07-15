@@ -15,6 +15,14 @@ public interface UserRepository extends JpaRepository<UserModel, Integer> {
     boolean existsByEmail(String email);
     boolean existsByPhone(String phone);
 
+    //lấy mật khẩu ra để thay đổi
+    @Query(value = "SELECT user.password FROM user WHERE user.id = :id", nativeQuery = true)
+    String findPasswordById(@Param("id") int id);
+
+    //thay doi password
+    @Query(value = "UPDATE user SET user.password = :password WHERE user.id = :id ", nativeQuery = true)
+    void changePassword(@Param("password") String password, @Param("id") int id);
+
 //List<UserModel> findByUserNameContainsIgnoreCase(String name);
 
 
