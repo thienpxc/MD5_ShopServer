@@ -8,6 +8,9 @@ import com.example.shop_server.modules.product.dto.UpdateWithDTO;
 import com.example.shop_server.modules.product.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -84,5 +87,17 @@ public class ProductController {
 
 
 
+
+    @GetMapping("/search")
+    public List<ProductModel> searchProductByName(@RequestParam String name) {
+        return productService.searchProductByName(name);
+    }
+
+    @GetMapping("/pagination")
+    public ResponseEntity<?> getProductByPagination(@RequestParam int offset, @RequestParam int limit) {
+        Pageable pageable = PageRequest.of(offset, limit);
+        Page<ProductModel> pageProducts = productService.findAll(pageable);
+        return ResponseEntity.ok(pageProducts.getContent());
+    }
 
 }

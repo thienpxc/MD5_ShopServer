@@ -8,6 +8,8 @@ import com.example.shop_server.modules.product.dto.*;
 import com.example.shop_server.modules.product.repository.ProductModelRepository;
 import com.example.shop_server.modules.product.repository.ProductModelRepositoryImg;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -130,6 +132,7 @@ public class ProductService {
         return product;
     }
 
+
     //chuyển đổi trạng thái sản phẩm
     public ProductModel updateProductStatus(Integer id) {
         ProductModel product = productModelRepository.findById(id)
@@ -143,6 +146,14 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         product.setFeatured(!product.isFeatured());
         return productModelRepository.save(product);
+
+    public List<ProductModel> searchProductByName(String name) {
+        return productModelRepository.findByNameIsContainingIgnoreCase(name);
+    }
+
+    public Page<ProductModel> findAll(Pageable pageable) {
+        return productModelRepository.findAll(pageable);
+
     }
 
 }

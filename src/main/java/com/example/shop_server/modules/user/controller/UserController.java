@@ -9,6 +9,8 @@ import com.example.shop_server.modules.user.service.UserService;
 import jakarta.validation.Valid;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -30,8 +32,8 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<Object> register(@Valid @RequestBody RegisterDTO data){
-        System.out.println("register"+data);
+    public ResponseEntity<Object> register(@Valid @RequestBody RegisterDTO data) {
+        System.out.println("register" + data);
         try {
             UserModel user = new UserModel();
             user.setUserName(data.getUserName());
@@ -41,8 +43,8 @@ public class UserController {
             user.setCreateAt(String.valueOf(System.currentTimeMillis()));
             user.setUpdateAt(String.valueOf(System.currentTimeMillis()));
             userService.save(user);
-            return  new ResponseEntity<>("Đăng ký thành công", HttpStatus.CREATED);
-        }catch (Exception e){
+            return new ResponseEntity<>("Đăng ký thành công", HttpStatus.CREATED);
+        } catch (Exception e) {
             if (e.getMessage().contains("Duplicate")) {
                 return new ResponseEntity<>("Email or user name already exists.", HttpStatus.BAD_REQUEST);
             }
@@ -52,21 +54,20 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<Object> login(@Valid @RequestBody LoginDTO data){
+    public ResponseEntity<Object> login(@Valid @RequestBody LoginDTO data) {
         try {
             UserModel user = userService.findUserByInfor(data.getLoginId());
 
-            if(user == null){
+            if (user == null) {
                 throw new Exception("Tài khoản không tồn tại");
             }
-            if(!BCrypt.checkpw(data.getPassword(), user.getPassword())){
+            if (!BCrypt.checkpw(data.getPassword(), user.getPassword())) {
                 throw new Exception("Sai mật khẩu");
             }
 
-            if(!user.isStatus()){
+            if (!user.isStatus()) {
                 throw new Exception("Tài khoản da bi khoa");
             }
-
 
 
             String token = JwtService.createTokenUser(user);
@@ -84,40 +85,39 @@ public class UserController {
 
             return new ResponseEntity<>(response, HttpStatus.OK);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
         }
     }
 
 
-
     @PostMapping("/authen")
-    public  ResponseEntity<Object> authen(@RequestAttribute("data") UserModel user){
+    public ResponseEntity<Object> authen(@RequestAttribute("data") UserModel user) {
 
         try {
             return new ResponseEntity<>(user, HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping("/list")
-    public ResponseEntity<Object> getAllUser(@RequestAttribute("data") UserModel user){
+    public ResponseEntity<Object> getAllUser(@RequestAttribute("data") UserModel user) {
         try {
-            if(!user.getPermission().contains("user")){
+            if (!user.getPermission().contains("user")) {
                 return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
             }
             return new ResponseEntity<>(userService.findUsers(), HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
         }
     }
 
     @PutMapping("/update")
-    public ResponseEntity<Object> updateUser(@RequestAttribute("data") UserModel user, @RequestBody UpdateDTO updateData){
-        System.out.println("updateData"+updateData);
+    public ResponseEntity<Object> updateUser(@RequestAttribute("data") UserModel user, @RequestBody UpdateDTO updateData) {
+        System.out.println("updateData" + updateData);
         try {
-            if(!user.getPermission().contains("user.u")) {
+            if (!user.getPermission().contains("user.u")) {
                 return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
             }
 
@@ -125,7 +125,7 @@ public class UserController {
             if (!userToUpdate.isPresent()) {
                 return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
             }
-            System.out.println("userToUpdate.get()"+ userToUpdate.get());
+            System.out.println("userToUpdate.get()" + userToUpdate.get());
 
             // Update fields from UpdateDTO to UserModel
             if (updateData.getUserName() != null) userToUpdate.get().setUserName(updateData.getUserName());
@@ -142,7 +142,7 @@ public class UserController {
 
             UserModel updatedUser = userService.update(userToUpdate.get());
 
-            System.out.println("userToUpdate.get().getId()"+ userToUpdate.get().getId());
+            System.out.println("userToUpdate.get().getId()" + userToUpdate.get().getId());
 
             JedisPool jedisPool = new JedisPool("localhost", 6379);
             try (Jedis jedis = jedisPool.getResource()) {
@@ -151,9 +151,74 @@ public class UserController {
             jedisPool.close();
 
             return new ResponseEntity<>(updatedUser, HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
         }
     }
 
+  @PutMapping("/changePassword")
+public ResponseEntity<Object> changePassword(@RequestAttribute("data") UserModel user, @RequestBody UpdateDTO updateData) {
+    try {
+        if (!user.getPermission().contains("user.u")) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+
+        Optional<UserModel> userToUpdate = userService.findUserById(updateData.getId());
+        if (!userToUpdate.isPresent()) {
+            return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+        }
+
+        if (!userService.verifyCurrentPassword(updateData.getPassword(), userToUpdate.get().getPassword())) {
+            return new ResponseEntity<>("Mật khẩu cũ không đúng", HttpStatus.BAD_REQUEST);
+        }
+
+        userToUpdate.get().setPassword(BCrypt.hashpw(updateData.getNewPassword(), BCrypt.gensalt()));
+        userToUpdate.get().setUpdateAt(String.valueOf(System.currentTimeMillis()));
+
+        UserModel updatedUser = userService.update(userToUpdate.get());
+
+        JedisPool jedisPool = new JedisPool("localhost", 6379);
+        try (Jedis jedis = jedisPool.getResource()) {
+            jedis.set(String.valueOf(userToUpdate.get().getId()), "");
+        }
+        jedisPool.close();
+
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+    } catch (Exception e) {
+        return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
+    }
 }
+
+//@GetMapping("/search")
+//public ResponseEntity<Object> searchUser(@RequestAttribute("data") UserModel user, @RequestParam String userName) {
+//    try {
+//        if (!user.getPermission().contains("user.r")) {
+//            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+//        }
+//        return new ResponseEntity<>(userService.findByNameIsContainingIgnoreCase(userName), HttpStatus.OK);
+//    } catch (Exception e) {
+//        return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
+//    }
+//}
+
+//@GetMapping("/pagination")
+//public ResponseEntity<Object> getUserByPagination(@RequestAttribute("data") UserModel user, @RequestParam int page, @RequestParam int size) {
+//    try {
+//        if (!user.getPermission().contains("user.r")) {
+//            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+//        }
+//        Pageable pageable = PageRequest.of(page, size);
+//        return new ResponseEntity<>(userService.findAll(pageable), HttpStatus.OK);
+//    } catch (Exception e) {
+//        return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
+//    }
+//}
+
+
+
+
+
+
+}
+
+
